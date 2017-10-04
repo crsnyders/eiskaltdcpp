@@ -77,6 +77,7 @@ public:
     void closeAllFileLists();
     void showOpenedLists(string& l, const string& separator);
     void lsDirInList(const string& directory, const string& filelist, unordered_map<string,StringMap>& ret);
+    void searchInDirInList(const string& name, const string& directory, const string& filelist, unordered_map<string,StringMap>& ret);
     bool downloadDirFromList(const string &target, const string &downloadto, const string &filelist);
     bool downloadFileFromList(const string &file, const string &downloadto, const string &filelist);
     void getItemDescbyTarget(const string &target, StringMap &sm);
@@ -162,6 +163,7 @@ private:
     void updateUser(const StringMap& params, Client* cl);
     void removeUser(const string& cid, Client* cl);
     void lsDirInList(DirectoryListing::Directory *dir, unordered_map<string,StringMap>& ret);
+    void searchInDirInList(string& name, DirectoryListing::Directory *dir, DirectoryListing* list, unordered_map<string,StringMap>& ret);
     bool downloadDirFromList(DirectoryListing::Directory *dir, DirectoryListing* list, const string& downloadto);
     bool downloadFileFromList(DirectoryListing::File *file, DirectoryListing *list, const string &downloadto);
 };

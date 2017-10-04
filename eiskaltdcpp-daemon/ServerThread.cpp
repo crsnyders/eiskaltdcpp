@@ -102,6 +102,7 @@ int ServerThread::run() {
     xmlrpc_c::methodPtr const refreshShareMethodP(new refreshShareMethod);
     xmlrpc_c::methodPtr const getChatPubMethodP(new getChatPubMethod);
     xmlrpc_c::methodPtr const getFileListMethodP(new getFileListMethod);
+    xmlrpc_c::methodPtr const searchFileListMethodP(new searchFileListMethod);
     xmlrpc_c::methodPtr const sendSearchMethodP(new sendSearchMethod);
     xmlrpc_c::methodPtr const returnSearchResultsMethodP(new returnSearchResultsMethod);
     xmlrpc_c::methodPtr const clearSearchResultsMethodP(new clearSearchResultsMethod);
@@ -134,6 +135,7 @@ int ServerThread::run() {
     xmlrpcRegistry.addMethod("share.list", listShareMethodP);
     xmlrpcRegistry.addMethod("share.refresh", refreshShareMethodP);
     xmlrpcRegistry.addMethod("list.download", getFileListMethodP);
+    xmlrpcRegistry.addMethod("list.search", searchFileListMethodP);
     xmlrpcRegistry.addMethod("search.send", sendSearchMethodP);
     xmlrpcRegistry.addMethod("search.getresults", returnSearchResultsMethodP);
     xmlrpcRegistry.addMethod("search.clear", clearSearchResultsMethodP);
@@ -213,6 +215,7 @@ int ServerThread::run() {
     jsonserver->AddMethod(new Json::Rpc::RpcMethod<JsonRpcMethods>(a, &JsonRpcMethods::CloseAllFileLists, std::string("list.closeall")));
     jsonserver->AddMethod(new Json::Rpc::RpcMethod<JsonRpcMethods>(a, &JsonRpcMethods::ShowOpenedLists, std::string("list.listopened")));
     jsonserver->AddMethod(new Json::Rpc::RpcMethod<JsonRpcMethods>(a, &JsonRpcMethods::LsDirInList, std::string("list.lsdir")));
+    jsonserver->AddMethod(new Json::Rpc::RpcMethod<JsonRpcMethods>(a, &JsonRpcMethods::SearchInDirInList, std::string("list.search")));
     jsonserver->AddMethod(new Json::Rpc::RpcMethod<JsonRpcMethods>(a, &JsonRpcMethods::DownloadDirFromList, std::string("list.downloaddir")));
     jsonserver->AddMethod(new Json::Rpc::RpcMethod<JsonRpcMethods>(a, &JsonRpcMethods::DownloadFileFromList, std::string("list.downloadfile")));
     jsonserver->AddMethod(new Json::Rpc::RpcMethod<JsonRpcMethods>(a, &JsonRpcMethods::SettingsGetSet, std::string("settings.getset")));
@@ -1336,6 +1339,45 @@ void ServerThread::lsDirInList(DirectoryListing::Directory *dir, unordered_map<s
     }
 }
 
+void ServerThread::FindInDirInList(const string& name, const string& directory, const string& filelist, unordered_map<string,StringMap>& ret) {
+    auto it = listsMap.find(filelist);
+    if (it != listsMap.end()) {
+        DirectoryListing::Directory *dir;
+        if (directory.empty() || directory == "\\") {
+            dir = it->second->getRoot();
+        } else {
+            dir = it->second->find(directory,it->second->getRoot());
+        }
+        SearchInDirInList(name,dir, ret);
+    }
+}
+
+void ServerThread::FindInDirInList(const string& name, DirectoryListing::Directory *dir, unordered_map<string,StringMap>& ret) {
+    if (dir == NULL)
+        return;
+    for (const auto& d : dir->directories) {
+        StringMap map;
+        map["Name"] = "d" + d->getName();
+        map["Size"] = Util::toString(d->getSize());
+        map["Size preformatted"] = Util::formatBytes(d->getSize());
+        ret[d->getName()] = map;
+    }
+    for (const auto& file : dir->files) {
+        StringMap map;
+        map["Name"] = file->getName();
+        map["Size"] = Util::toString(file->getSize());
+        map["Size preformatted"] = Util::formatBytes(file->getSize());
+        map["TTH"] = file->getTTH().toBase32();
+        map["Bitrate"] = file->mediaInfo.bitrate ? (Util::toString(file->mediaInfo.bitrate)) : Util::emptyString;
+        map["Resolution"] = !file->mediaInfo.video_info.empty() ? file->mediaInfo.resolution : Util::emptyString;
+        map["Video"] = file->mediaInfo.video_info;
+        map["Audio"] = file->mediaInfo.audio_info;
+        map["Downloaded"] = Util::toString(file->getHit());
+        map["Shared"] = Util::formatTime("%Y-%m-%d %H:%M", file->getTS());
+        ret[file->getName()] = map;
+    }
+}
+
 bool ServerThread::downloadDirFromList(const string& directory, const string& downloadto, const string& filelist)
 {
     auto it = listsMap.find(filelist);
@@ -1515,6 +1557,6 @@ bool ServerThread::configReload()
         SettingsManager::newInstance();
         SettingsManager::getInstance()->load();
         return true;
-    } else 
+    } else
         return false;
 }

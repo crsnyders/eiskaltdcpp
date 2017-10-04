@@ -806,6 +806,35 @@ bool JsonRpcMethods::LsDirInList(const Json::Value& root, Json::Value& response)
     if (isDebug) std::cout << "LsDirInList (response): " << response << std::endl;
     return true;
 }
+bool JsonRpcMethods::FindInDirInList(const Json::Value& root, Json::Value& response) {
+    if (isDebug) std::cout << "FindDirInList (root): " << root << std::endl;
+    response["jsonrpc"] = "2.0";
+    response["id"] = root["id"];
+
+    if ((root["params"].isMember("name") && !root["params"]["name"].isString()
+        && !root["params"]["name"].isConvertibleTo(Json::stringValue))
+        ||(root["params"].isMember("directory") && !root["params"]["directory"].isString()
+        && !root["params"]["directory"].isConvertibleTo(Json::stringValue))
+        || (root["params"].isMember("filelist") && !root["params"]["filelist"].isString()
+        && !root["params"]["filelist"].isConvertibleTo(Json::stringValue))
+        ) {
+        FailedValidateRequest(response);
+        return false;
+    }
+
+    Json::Value parameters;
+    unordered_map<string,StringMap> map;
+    ServerThread::getInstance()->findInDirInList(root["params"]["name"].asString(),["params"]["directory"].asString(), root["params"]["filelist"].asString(), map);
+    for (const auto& item : map) {
+        for (const auto& parameter : item.second) {
+            parameters[item.first][parameter.first] = parameter.second;
+        }
+    }
+    response["result"] = parameters;
+    if (isDebug) std::cout << "LsDirInList (response): " << response << std::endl;
+    return true;
+}
+
 
 bool JsonRpcMethods::DownloadDirFromList(const Json::Value& root, Json::Value& response) {
     if (isDebug) std::cout << "DownloadDirFromList (root): " << root << std::endl;
