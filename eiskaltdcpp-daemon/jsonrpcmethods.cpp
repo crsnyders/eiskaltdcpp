@@ -806,8 +806,8 @@ bool JsonRpcMethods::LsDirInList(const Json::Value& root, Json::Value& response)
     if (isDebug) std::cout << "LsDirInList (response): " << response << std::endl;
     return true;
 }
-bool JsonRpcMethods::FindInDirInList(const Json::Value& root, Json::Value& response) {
-    if (isDebug) std::cout << "FindDirInList (root): " << root << std::endl;
+bool JsonRpcMethods::SearchInDirInList(const Json::Value& root, Json::Value& response) {
+    if (isDebug) std::cout << "SearchDirInList (root): " << root << std::endl;
     response["jsonrpc"] = "2.0";
     response["id"] = root["id"];
 
