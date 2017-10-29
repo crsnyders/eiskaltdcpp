@@ -1339,7 +1339,7 @@ void ServerThread::lsDirInList(DirectoryListing::Directory *dir, unordered_map<s
     }
 }
 
-void ServerThread::SearchInDirInList(const string& name, const string& directory, const string& filelist, unordered_map<string,StringMap>& ret) {
+void ServerThread::searchInDirInList(const string& name, const string& directory, const string& filelist, unordered_map<string,StringMap>& ret) {
     auto it = listsMap.find(filelist);
     if (it != listsMap.end()) {
         DirectoryListing::Directory *dir;
@@ -1348,11 +1348,11 @@ void ServerThread::SearchInDirInList(const string& name, const string& directory
         } else {
             dir = it->second->find(directory,it->second->getRoot());
         }
-        SearchInDirInList(name,dir, ret);
+        searchInDirInList(name, dir, ret);
     }
 }
 
-void ServerThread::SearchInDirInList(const string& name, DirectoryListing::Directory *dir, unordered_map<string,StringMap>& ret) {
+void ServerThread::searchInDirInList(const string& name, DirectoryListing::Directory *dir, unordered_map<string,StringMap>& ret) {
     if (dir == NULL)
         return;
     for (const auto& d : dir->directories) {

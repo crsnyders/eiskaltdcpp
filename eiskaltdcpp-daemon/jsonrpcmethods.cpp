@@ -824,7 +824,7 @@ bool JsonRpcMethods::SearchInDirInList(const Json::Value& root, Json::Value& res
 
     Json::Value parameters;
     unordered_map<string,StringMap> map;
-    ServerThread::getInstance()->findInDirInList(root["params"]["name"].asString(),["params"]["directory"].asString(), root["params"]["filelist"].asString(), map);
+    ServerThread::getInstance()->searchInDirInList(root["params"]["name"].asString(),root["params"]["directory"].asString(), root["params"]["filelist"].asString(), map);
     for (const auto& item : map) {
         for (const auto& parameter : item.second) {
             parameters[item.first][parameter.first] = parameter.second;

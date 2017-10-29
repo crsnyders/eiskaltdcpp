@@ -163,7 +163,7 @@ private:
     void updateUser(const StringMap& params, Client* cl);
     void removeUser(const string& cid, Client* cl);
     void lsDirInList(DirectoryListing::Directory *dir, unordered_map<string,StringMap>& ret);
-    void searchInDirInList(string& name, DirectoryListing::Directory *dir, DirectoryListing* list, unordered_map<string,StringMap>& ret);
+    void searchInDirInList(const string& name, DirectoryListing::Directory *dir, unordered_map<string,StringMap>& ret);
     bool downloadDirFromList(DirectoryListing::Directory *dir, DirectoryListing* list, const string& downloadto);
     bool downloadFileFromList(DirectoryListing::File *file, DirectoryListing *list, const string &downloadto);
 };
